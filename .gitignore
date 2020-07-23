@@ -1,0 +1,13 @@
+*.wav
+*.txt
+*.pyc
+*.log
+*.zip
+*.gz
+*.o
+.DS_Store
+.DS_Store?
+.Trashes
+._*
+ehthumbs.db
+Thumbs.db
