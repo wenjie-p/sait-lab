@@ -12,7 +12,7 @@ import sys
 from utils import write2file
 
 
-def make_scp(src, des, fout):
+def make_scp(src, suffix):
     data = []
     for stage in os.listdir(src):
         ds = "{}/{}".format(src, stage)
@@ -20,27 +20,55 @@ def make_scp(src, des, fout):
             continue
         for spk in os.listdir(ds):
             gender = spk[0]
-            dwav = "{}/{}/Audio".format(ds, spk)
-            if not os.path.exists(dwav):
-                continue
-            des_dir = "{}/{}/Pitch_Dir".format(ds, spk)
-            if not os.path.exists(des_dir):
-                os.makedirs(des_dir)
+            dwav = "{}/{}/{}".format(ds, spk, suffix)
             for wav in os.listdir(dwav):
+                if not wav.endswith(".wav"):
+                    continue
                 fwav = "{}/{}".format(dwav, wav)
-                fpit = "{}/{}.pitch".format(des_dir, wav.split(".")[0])
+                fpit = fwav.replace(".wav", ".pitch")
+                fwav = os.path.abspath(fwav)
+                fpit = os.path.abspath(fpit)
                 line = "{}\t{}\t{}\n".format(fwav, gender, fpit)
                 data.append(line)
-
-    write2file(fout, data)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: {} /path/to/data/[pre:mid:post] pitch_dir fout[scp]".format(sys.argv[0]))
+    if len(data) == 0:
+        print(src)
         exit(0)
+    return data
 
-    scp = sys.argv[3]
-    make_scp(sys.argv[1], sys.argv[2], scp)
-    #scp = os.path.abspath(scp)
-    #f0_extraction(scp)
+
+def make_scp3(src):
+    data = []
+    for spk in os.listdir(src):
+        dspk = "{}/{}".format(src, spk)
+        if not os.path.isdir(dspk):
+            continue
+        for f in os.listdir(dspk):
+            if not f.endswith(".wav"):
+                continue
+            fwav = "{}/{}".format(dspk, f)
+            fpit = fwav.replace(".wav", ".pitch")
+            fwav = os.path.abspath(fwav)
+            fpit = os.path.abspath(fpit)
+            gender = spk[0]
+            line = "{}\t{}\t{}\n".format(fwav, gender, fpit)
+            data.append(line)
+    if len(data) == 0:
+        print(src)
+        exit(0)
+    return data
+
+src1 = "../../data/YaYa/TextGrid_Wav/First_Batch_Data/First_Batch_Data"
+src2 = "../../data/YaYa/TextGrid_Wav/Second_Batch_Data/Second_Batch_Data"
+src3 = "../../data/YaYa/TextGrid_Wav/Third_Batch_Data/"
+src4 = "../../data/YaYa/TextGrid_Wav/Five_Batch_Data/"
+
+op = "New_TG"
+data1 = make_scp(src1, op)
+data2 = make_scp(src2, op)
+data4 = make_scp(src4, "")
+data3 = make_scp3(src3)
+
+data = data1 + data2 + data3 + data4
+
+fout = "./all_wav.scp"
+write2file(fout, data)
